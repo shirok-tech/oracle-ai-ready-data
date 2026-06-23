@@ -1,0 +1,13 @@
+name: rag
+weights:
+  clean: 0.10
+  contextual: 0.30
+  consumable: 0.30
+  current: 0.10
+  correlated: 0.10
+  compliant: 0.10
+mandatory_gates:
+  table_comment_coverage: 1.0
+  column_comment_coverage: 1.0
+notes:
+  vector_columns_are_helpful_but_not_always_required: true

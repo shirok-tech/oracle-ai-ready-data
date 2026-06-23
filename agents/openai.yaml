@@ -1,0 +1,3 @@
+interface:
+  display_name: "Oracle AI Ready Data"
+  short_description: "Evaluate Oracle Database data and AI feature readiness from SQLcl output."

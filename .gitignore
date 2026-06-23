@@ -1,0 +1,28 @@
+# Generated SQLcl output and reports
+*.out
+*.log
+*_report.md
+*_improvement.sql
+*_setup.sql
+oracle_ai_feature_readiness_*.md
+oracle_ai_feature_setup_*.sql
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets / local env
+*.env
+.env
+wallet*/
+*.sso
+*.p12
+*.pem
+*.key
