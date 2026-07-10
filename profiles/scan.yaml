@@ -1,11 +1,12 @@
 name: scan
-weights:
-  clean: 0.20
-  contextual: 0.25
-  consumable: 0.15
-  current: 0.15
-  correlated: 0.15
-  compliant: 0.10
 mandatory_gates:
   table_comment_coverage: 1.0
   column_comment_coverage: 1.0
+focus:
+  - comments
+  - keys
+  - constraints
+  - statistics
+  - freshness
+  - traceability
+  - access_review

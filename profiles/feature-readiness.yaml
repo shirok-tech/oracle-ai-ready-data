@@ -1,36 +1,10 @@
-profile: feature-readiness
-version: 1
-status_points:
-  ready: 1.0
-  supported_setup_required: 0.60
-  visible_blocked: 0.35
-  unknown_manual_review: 0.20
-  not_detected: 0.0
-features:
-  select_ai_nl2sql:
-    weight: 0.25
-    priority: high
-  select_ai_rag:
-    weight: 0.20
-    priority: high
-  oracle_ai_vector_search:
-    weight: 0.15
-    priority: high
-  select_ai_agent_sql_tool:
-    weight: 0.15
-    priority: high
-  select_ai_agent_rag_tool:
-    weight: 0.10
-    priority: high
-  synthetic_data_generation:
-    weight: 0.08
-    priority: medium_high
-  nl2sql_feedback:
-    weight: 0.04
-    priority: medium
-  auto_object_selection:
-    weight: 0.03
-    priority: medium
-excluded_by_default:
-  - translation
-  - generic_chat
+name: feature-readiness
+priority:
+  select_ai_nl2sql: 0.25
+  select_ai_rag: 0.20
+  native_vector: 0.15
+  agent_sql: 0.15
+  agent_rag: 0.10
+  synthetic_data_generation: 0.08
+  feedback: 0.04
+  auto_object_selection: 0.03

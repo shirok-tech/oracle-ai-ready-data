@@ -1,57 +1,35 @@
 ---
 name: oracle-ai-ready-data
-description: assess oracle database schemas for ai-ready data and oracle ai feature readiness using sqlcl output. use when the user asks to evaluate oracle database schemas, scan/rag readiness, mandatory table and column comments, metadata quality, select ai/nl2sql readiness, select ai rag, oracle ai vector search, dbms_cloud_ai, dbms_cloud_ai_agent, synthetic data generation, auto object selection, or improvement/setup sql for oracle ai use cases.
+description: assess oracle database schemas and turn readiness findings into reviewable select ai nl2sql and select ai rag setup packages. use when chatgpt needs to inspect sqlcl metadata, score ai-ready comments and relationships, check dbms_cloud_ai or vector capabilities, generate ai profiles that include comments annotations and constraints, create managed vector-index configuration for document rag, produce smoke tests, or verify an existing select ai setup.
 ---
 
 # Oracle AI Ready Data
 
-## Purpose
+## Goal
 
-Use this skill to evaluate Oracle Database schemas and Oracle AI feature readiness from SQLcl-collected metadata. Produce Markdown reports with scores, mandatory comment-gate results, prioritized gaps, and improvement/setup SQL.
+Evaluate Oracle Database metadata, distinguish feature presence from usable configuration, and generate reviewable SQL that takes a schema from assessment to tested Select AI NL2SQL or Select AI RAG configuration.
 
-The skill supports two complementary workflows:
+Use the user's language in reports. Never request or store provider secrets. Accept only names of existing Oracle credential objects.
 
-1. **Data readiness**: `scan` and `rag` profiles for schema/table metadata quality.
-2. **Feature readiness**: checks whether Oracle AI capabilities such as Select AI / NL2SQL, Select AI RAG, Oracle AI Vector Search, AI Agent, SDG, Feedback, and Auto Object Selection are visible and configured.
+## Choose the workflow
 
-Translation and generic chat are intentionally low priority and are not primary readiness targets.
+1. Use **data assessment** when the request is about comments, constraints, relationships, schema quality, scan readiness, or RAG data candidates.
+2. Use **feature assessment** when the request is about DBMS_CLOUD_AI, Select AI, Vector Search, AI Agent, SDG, Feedback, or available procedures.
+3. Use **setup generation** when the user wants to create or improve Select AI profiles, connect annotations and comments to NL2SQL, configure Select AI RAG, or produce executable setup SQL.
+4. Use **verification** when profiles or vector indexes already exist and the user wants evidence that the stored configuration is complete.
 
-## Default workflow
+Do not describe an environment as ready merely because packages, profiles, or indexes exist. Runtime smoke tests are required.
 
-1. Determine the request type.
-   - **Schema quality / comments / constraints / HR vs BAD_AI_READY / scan / rag** → use the data readiness workflow.
-   - **Which Oracle AI features are available / Select AI / NL2SQL / DBMS_CLOUD_AI / RAG / Vector Search / AI Agent / SDG** → use the feature readiness workflow.
-2. Determine scope.
-   - Required: schema owner.
-   - Optional: table name pattern, profile, existing SQLcl spool file.
-   - Default table pattern: `%`.
-   - Default data readiness profile: `scan` unless the user mentions RAG, vector search, embeddings, retrieval, chatbot, or agents over table data; then use `rag`.
-3. Collect metadata when the user has not provided a SQLcl spool file.
-4. Parse and score with the bundled Python scorer when a spool file is available.
-5. Produce a Markdown report and review-before-run improvement/setup SQL.
+## Data assessment
 
-Use Japanese when the user writes in Japanese; otherwise use the user's language.
-
-## Data readiness workflow: scan / rag
-
-Use this for evaluating whether tables and columns are ready for AI/RAG usage from a metadata-quality perspective.
-
-Collection command:
+Collect metadata:
 
 ```bash
-sql -s <user>/<password>@<connect_identifier> @scripts/oracle_ai_ready_collect.sql <schema_owner> <table_like_pattern> <profile>
+sql -s <user>/<password>@<connect_identifier> \
+  @scripts/oracle_ai_ready_collect.sql <schema_owner> <table_like_pattern> <profile>
 ```
 
-Examples:
-
-```bash
-sql -s ai_audit/****@dbhost:1521/service @scripts/oracle_ai_ready_collect.sql HR % scan
-sql -s ai_audit/****@dbhost:1521/service @scripts/oracle_ai_ready_collect.sql HR EMP% rag
-```
-
-The collector spools `oracle_ai_ready_scan_<schema>_<profile>.out`.
-
-Scoring command:
+Score it:
 
 ```bash
 python3 scripts/score_oracle_ai_ready_scan.py \
@@ -62,132 +40,151 @@ python3 scripts/score_oracle_ai_ready_scan.py \
   --sql-output hr_scan_improvement.sql
 ```
 
-For RAG:
+Use `rag` instead of `scan` when the user asks about document retrieval, embeddings, vector search, or agent RAG.
+
+Always enforce these gates:
+
+- Table comment coverage must be 100 percent.
+- Column comment coverage must be 100 percent.
+
+Treat these gates as the project's chosen policy, not as a universal Oracle product prerequisite.
+
+## Feature assessment
+
+Collect evidence:
 
 ```bash
-python3 scripts/score_oracle_ai_ready_scan.py \
-  oracle_ai_ready_scan_HR_rag.out \
-  --profile rag \
-  --language ja \
-  --output hr_rag_report.md \
-  --sql-output hr_rag_improvement.sql
+sql -s <user>/<password>@<connect_identifier> \
+  @scripts/oracle_ai_feature_collect.sql <schema_owner> <table_like_pattern>
 ```
 
-### Required scoring behavior
-
-Always evaluate these mandatory gates:
-
-- Table comment coverage: target 100% of in-scope tables.
-- Column comment coverage: target 100% of in-scope columns.
-
-If either mandatory gate is below 100%, mark the readiness gate as `fail`, even when the numeric score is otherwise acceptable. This reflects the user's explicit requirement that table and column comments are mandatory.
-
-Use the profile weights and metric definitions in `references/oracle-ai-ready-checks.md`. For most tasks, do not load the reference until scoring or explaining a metric is needed.
-
-## Feature readiness workflow: Oracle AI capabilities
-
-Use this for evaluating whether the current Oracle Database environment can use Oracle AI features and what setup is still missing.
-
-Collection command:
-
-```bash
-sql -s <user>/<password>@<connect_identifier> @scripts/oracle_ai_feature_collect.sql <schema_owner> <table_like_pattern>
-```
-
-Example:
-
-```bash
-sql -s admin/****@adb @scripts/oracle_ai_feature_collect.sql HR %
-```
-
-The collector spools `oracle_ai_feature_readiness_<schema>.out`.
-
-Scoring command:
+Create a report, compatibility SQL template, and editable setup config:
 
 ```bash
 python3 scripts/score_oracle_ai_feature_readiness.py \
   oracle_ai_feature_readiness_HR.out \
   --language ja \
   --output oracle_ai_feature_readiness_HR.md \
-  --sql-output oracle_ai_feature_setup_HR.sql
+  --sql-output oracle_ai_feature_setup_HR.sql \
+  --config-output hr_select_ai_config.json
 ```
 
-### Feature readiness interpretation
+Interpret results precisely:
 
-Distinguish these cases clearly:
+- Package visible and profile absent means supported-looking but not configured.
+- Profile present does not prove provider connectivity or SQL quality.
+- Vector capability present does not mean a document corpus exists.
+- A relational schema with no suitable long-form documents is not automatically RAG ready.
 
-- **AI feature exists but setup is missing**: `DBMS_CLOUD_AI`, `DBMS_CLOUD_AI_AGENT`, or vector procedures are visible, but AI profiles, credentials, vector indexes, or agent definitions are missing.
-- **Select AI blocked**: `DBMS_CLOUD_AI` is not visible. Do not imply that `CREATE_PROFILE` can work. Provide environment/support/privilege checks instead.
-- **Native Vector Search available without Select AI**: `DBMS_VECTOR` or `DBMS_VECTOR_CHAIN` is visible but `DBMS_CLOUD_AI` is not. Recommend native vector smoke tests or application-managed RAG rather than Select AI setup SQL.
-- **Autonomous AI Database / Autonomous AI Lakehouse pattern**: `DBMS_CLOUD_AI` and `DBMS_CLOUD_AI_AGENT` may be visible even when no AI profile exists. Report this as “AI機能あり・未設定”, not “AI機能なし”.
+## Select AI setup generation
 
-Prioritize these features:
+Start from `examples/select_ai_rag_config.json` or a config emitted by the feature scorer. Require these inputs:
 
-1. Select AI / NL2SQL
-2. Select AI RAG
-3. Oracle AI Vector Search / Vector Index
-4. Select AI Agent SQL tool
-5. Select AI Agent RAG tool
-6. Synthetic Data Generation (SDG)
-7. NL2SQL Feedback
-8. Auto Object Selection
+- Target schema owner.
+- Existing AI provider credential object name.
+- Supported chat model or provider-specific deployment/endpoint attributes.
+- Bounded object list or `object_list_mode=automated` for NL2SQL.
+- For RAG: a real document location, an object-storage credential object, an embedding model, and a vector index name.
+- Representative NL2SQL and RAG smoke-test prompts.
 
-Do not prioritize Translation / generic Chat unless the user explicitly asks.
+Generate the package:
 
-## Report requirements
-
-Data readiness reports must include:
-
-- Executive summary.
-- Scope and assumptions.
-- Explanation of each AI-ready dimension.
-- Scorecard by AI-ready dimension.
-- Metrics detail with explanations.
-- Mandatory comment gate result.
-- Prioritized findings.
-- Improvement SQL with reason, purpose, and review notes.
-- Manual review items.
-
-Feature readiness reports must include:
-
-- Executive summary that separates “feature exists” from “ready to use”.
-- Environment evidence: DB/PDB, session user, version evidence, compatible parameter when available.
-- Feature-by-feature status table.
-- Package/procedure evidence.
-- AI profile and vector/RAG detection results.
-- Key gaps.
-- Setup SQL templates only when the required package is visible.
-- Next actions tailored to Select AI, native vector search, or missing-feature cases.
-
-## Improvement and setup SQL rules
-
-Generate executable SQL only for safe, reviewable changes. Use quoted identifiers for owner, table, and column names. Keep statements idempotence-aware by including comments that the user must review existing metadata before running.
-
-Preferred data readiness improvement SQL examples:
-
-```sql
-COMMENT ON TABLE "OWNER"."TABLE_NAME" IS 'TODO: describe business meaning, grain, refresh cadence, and AI usage notes.';
-COMMENT ON COLUMN "OWNER"."TABLE_NAME"."COLUMN_NAME" IS 'TODO: define meaning, units, null semantics, allowed values, and sensitivity.';
+```bash
+python3 scripts/generate_select_ai_setup.py \
+  examples/select_ai_rag_config.json \
+  --output-dir generated_select_ai_setup
 ```
 
-For potentially disruptive changes such as adding primary keys, adding timestamp columns, creating vector columns/indexes, masking, redaction, or privilege changes, provide templates only and clearly mark them as candidate SQL requiring DBA/application-owner review.
+The generator creates:
 
-For feature readiness setup SQL:
+- `01_preflight.sql`
+- `02_create_nl2sql_profile.sql`
+- `03_create_rag_profile.sql`
+- `04_create_vector_index.sql`
+- `05_attach_vector_index.sql`
+- `06_smoke_test.sql`
+- `07_collect_verification.sql`
+- `99_rollback_template.sql`
 
-- Only output `DBMS_CLOUD_AI.CREATE_PROFILE` templates when `DBMS_CLOUD_AI` is visible.
-- Only output `DBMS_CLOUD_AI.CREATE_VECTOR_INDEX` templates when `CREATE_VECTOR_INDEX` is visible.
-- Only output `DBMS_CLOUD_AI_AGENT` placeholders when `DBMS_CLOUD_AI_AGENT` is visible.
-- If only `DBMS_VECTOR` / `DBMS_VECTOR_CHAIN` is visible, output native vector smoke-test SQL instead.
+Run only after reviewing provider, model, region, credential names, object scope, document source, data-governance implications, and generated SQL.
 
-## Bundled resources
+### NL2SQL metadata rules
 
-- `scripts/oracle_ai_ready_collect.sql`: SQLcl metadata collector for schema data readiness.
-- `scripts/score_oracle_ai_ready_scan.py`: Parser and scorer for scan/rag SQLcl output.
-- `scripts/oracle_ai_feature_collect.sql`: SQLcl collector for Select AI, RAG, Vector Search, Agent, SDG, Feedback, and Auto Object Selection feature evidence.
-- `scripts/score_oracle_ai_feature_readiness.py`: Parser and scorer for Oracle AI feature readiness output.
-- `references/oracle-ai-ready-checks.md`: profiles, dimensions, metrics, and interpretation guidance.
-- `references/oracle-ai-feature-checks.md`: feature readiness checks and status interpretation.
-- `references/markdown-report-template.md`: default report structure.
-- `profiles/scan.yaml`: scan profile weights.
-- `profiles/rag.yaml`: rag profile weights.
-- `profiles/feature-readiness.yaml`: feature readiness priority weights.
+For the NL2SQL profile, prefer:
+
+- `comments=true`
+- `annotations=true` on Oracle AI Database 26ai when annotations are used
+- `constraints=true`
+- `enforce_object_list=true` for bounded profiles
+- Accurate `role` and `additional_instructions`
+
+Use comments or annotations for definitions, aliases, units, and semantic context. Put logic that must never be omitted into reviewed database views rather than relying only on prompt text.
+
+Use `SHOWPROMPT` to confirm that the expected metadata actually reaches prompt construction. This is more reliable than checking only that annotations exist in DDL.
+
+### RAG rules
+
+Use separate profiles for NL2SQL and RAG by default. This keeps SQL metadata scope and document-retrieval configuration independently testable.
+
+Require the RAG profile to contain an embedding model. Require the managed vector index to contain:
+
+- `profile_name`
+- `location`
+- `object_storage_credential_name`
+- `vector_db_provider`
+- chunk settings
+- refresh settings
+- source settings
+
+Place `enable_sources` in the vector-index attributes. Do not set it as an AI-profile attribute. Use `enable_custom_source_uri` on the profile only when custom source URLs are intentionally configured.
+
+The embedding model used for indexing and query embeddings must be compatible. Validate retrieved chunks and citations against known documents.
+
+## Setup verification
+
+Run the generated evidence collector:
+
+```bash
+sql -s <user>/<password>@<connect_identifier> \
+  @generated_select_ai_setup/07_collect_verification.sql
+```
+
+Score stored configuration:
+
+```bash
+python3 scripts/score_select_ai_verification.py \
+  select_ai_setup_verification.out \
+  --nl2sql-profile HR_NL2SQL \
+  --rag-profile HR_RAG \
+  --vector-index HR_DOCS_VECIDX \
+  --output select_ai_setup_verification.md
+```
+
+Then run `06_smoke_test.sql` and inspect:
+
+1. Profile and vector-index status.
+2. `SHOWPROMPT` metadata enrichment.
+3. `SHOWSQL` table selection, joins, filters, and read-only behavior.
+4. Optional `RUNSQL` only after reviewing generated SQL.
+5. RAG answer grounding, source links, filenames, and known-answer accuracy.
+6. Stateless `DBMS_CLOUD_AI.GENERATE` calls for Database Actions, APEX, or connection pools.
+
+## Safety
+
+- Collectors are read-only.
+- Setup SQL changes database objects and can invoke external AI providers.
+- Do not embed passwords, API keys, tokens, or private keys in configs, SQL, reports, or logs.
+- Do not run generated DDL in production without DBA, security, data-owner, and application-owner review.
+- Object names, column names, comments, annotations, prompts, retrieved document content, and query results may be sent to an AI provider depending on the action and configuration.
+- Keep `RUNSQL` disabled until `SHOWSQL` output has been reviewed.
+- Keep rollback statements commented until deletion scope and retained data are understood.
+
+## References
+
+Read these only when needed:
+
+- `references/oracle-ai-ready-checks.md` for schema metrics.
+- `references/oracle-ai-feature-checks.md` for feature-state interpretation.
+- `references/select-ai-rag-setup.md` for profile, vector-index, and smoke-test design.
+- `references/annotation-guidance.md` for comments, annotations, aliases, units, and semantic views.
+- `references/markdown-report-template.md` for report structure.

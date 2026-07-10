@@ -1,0 +1,25 @@
+{
+  "schema_owner": "HR",
+  "nl2sql_profile": {
+    "name": "HR_NL2SQL",
+    "provider": "oci",
+    "credential_name": "OCI_GENAI_CRED",
+    "model": "REPLACE_WITH_SUPPORTED_CHAT_MODEL",
+    "region": "REPLACE_WITH_REGION",
+    "object_list": [
+      {"owner": "HR"}
+    ],
+    "comments": true,
+    "annotations": true,
+    "constraints": true,
+    "enforce_object_list": true,
+    "additional_instructions": "Prefer documented views and generate read-only SQL."
+  },
+  "rag": {
+    "enabled": false
+  },
+  "smoke_tests": {
+    "nl2sql_prompt": "How many employees are there in each department?",
+    "run_sql": false
+  }
+}

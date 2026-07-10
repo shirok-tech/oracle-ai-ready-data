@@ -1,6 +1,10 @@
-# Generated SQLcl output and reports
+# Generated SQLcl output, reports, and release artifacts
 *.out
 *.log
+__pycache__/
+*.py[cod]
+generated_select_ai_setup/
+dist/
 *_report.md
 *_improvement.sql
 *_setup.sql
@@ -8,8 +12,6 @@ oracle_ai_feature_readiness_*.md
 oracle_ai_feature_setup_*.sql
 
 # Python
-__pycache__/
-*.py[cod]
 .venv/
 venv/
 
