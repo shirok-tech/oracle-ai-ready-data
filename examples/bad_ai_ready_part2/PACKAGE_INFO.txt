@@ -1,0 +1,13 @@
+Package: bad_ai_ready_part2
+Release: 1.0.0
+Internal revision: v4
+Purpose: Qiita oracle-ai-ready-data Part 2 demonstration with executable remediation and Select AI NL2SQL functional verification.
+Tables: 8
+Initial columns: 52
+Improved columns: 68
+Rows: 448
+PK constraints added: 8
+FK constraints added: 5
+Select AI natural-language tests: 10
+Prompt hardening: explicit numeric conversion for T03/T07 and explicit ACTIVE/JP conditions for T08.
+All values and identifiers are synthetic.

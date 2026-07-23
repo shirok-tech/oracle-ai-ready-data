@@ -16,3 +16,7 @@ Expected weaknesses:
 - Broad grant candidate
 
 Use it to compare against HR or another well-documented schema.
+
+## BAD_AI_READY Part 2 demo
+
+[BAD_AI_READY Part 2](bad_ai_ready_part2/README.md) is a reproducible remediation and Select AI / NL2SQL functional-verification demo. It starts from an intentionally metadata-poor schema, applies reviewed improvements, and verifies the resulting metadata and generated SQL.

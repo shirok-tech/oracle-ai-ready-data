@@ -1,0 +1,65 @@
+{
+  "version": "2.0.0",
+  "total_rows": 448,
+  "row_counts": {
+    "raw_customers.csv": 50,
+    "raw_orders.csv": 100,
+    "raw_order_lines.csv": 200,
+    "ai_documents.csv": 12,
+    "customer_features.csv": 50,
+    "support_tickets.csv": 30,
+    "orphan_regions.csv": 6,
+    "empty_export.csv": 0
+  },
+  "design": "Metadata is intentionally weak; row data is PK/FK ready.",
+  "primary_key_candidates": {
+    "RAW_CUSTOMERS": [
+      "CUSTOMER_ID"
+    ],
+    "RAW_ORDERS": [
+      "ORDER_ID"
+    ],
+    "RAW_ORDER_LINES": [
+      "ORDER_ID",
+      "LINE_NO"
+    ],
+    "AI_DOCUMENTS": [
+      "DOC_ID",
+      "CHUNK_NUMBER"
+    ],
+    "CUSTOMER_FEATURES": [
+      "CUSTOMER_ID"
+    ],
+    "SUPPORT_TICKETS": [
+      "TICKET_ID"
+    ],
+    "ORPHAN_REGIONS": [
+      "COUNTRY_CODE"
+    ],
+    "EMPTY_EXPORT": [
+      "EXPORT_ID"
+    ]
+  },
+  "foreign_key_candidates": [
+    [
+      "RAW_CUSTOMERS.COUNTRY_CODE",
+      "ORPHAN_REGIONS.COUNTRY_CODE"
+    ],
+    [
+      "RAW_ORDERS.CUSTOMER_ID",
+      "RAW_CUSTOMERS.CUSTOMER_ID"
+    ],
+    [
+      "RAW_ORDER_LINES.ORDER_ID",
+      "RAW_ORDERS.ORDER_ID"
+    ],
+    [
+      "CUSTOMER_FEATURES.CUSTOMER_ID",
+      "RAW_CUSTOMERS.CUSTOMER_ID"
+    ],
+    [
+      "SUPPORT_TICKETS.CUSTOMER_ID",
+      "RAW_CUSTOMERS.CUSTOMER_ID"
+    ]
+  ]
+}

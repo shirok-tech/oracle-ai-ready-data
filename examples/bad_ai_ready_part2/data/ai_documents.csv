@@ -1,0 +1,13 @@
+DOC_ID,ORIGIN_URI,TITLE_TXT,BODY_TEXT,CHUNK_NUMBER,EMBEDDING_BLOB_TXT,LIFECYCLE_STATE
+1,https://example.invalid/docs/doc-001,Account access guide,"Account access demonstration text, chunk 1. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",1,,READY
+1,https://example.invalid/docs/doc-001,Account access guide,"Account access demonstration text, chunk 2. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",2,,READY
+2,https://example.invalid/docs/doc-002,Order status guide,"Order status demonstration text, chunk 1. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",1,,READY
+2,https://example.invalid/docs/doc-002,Order status guide,"Order status demonstration text, chunk 2. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",2,,READY
+3,https://example.invalid/docs/doc-003,Refund policy guide,"Refund policy demonstration text, chunk 1. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",1,,READY
+3,https://example.invalid/docs/doc-003,Refund policy guide,"Refund policy demonstration text, chunk 2. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",2,,READY
+4,https://example.invalid/docs/doc-004,Shipping guidance guide,"Shipping guidance demonstration text, chunk 1. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",1,,READY
+4,https://example.invalid/docs/doc-004,Shipping guidance guide,"Shipping guidance demonstration text, chunk 2. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",2,,READY
+5,https://example.invalid/docs/doc-005,Security review guide,"Security review demonstration text, chunk 1. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",1,,READY
+5,https://example.invalid/docs/doc-005,Security review guide,"Security review demonstration text, chunk 2. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",2,,READY
+6,https://example.invalid/docs/doc-006,Support escalation guide,"Support escalation demonstration text, chunk 1. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",1,,READY
+6,https://example.invalid/docs/doc-006,Support escalation guide,"Support escalation demonstration text, chunk 2. This synthetic passage explains the standard process and the expected evidence for an AI-generated answer.",2,,READY

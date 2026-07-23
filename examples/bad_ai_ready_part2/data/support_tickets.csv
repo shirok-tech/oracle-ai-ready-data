@@ -1,0 +1,31 @@
+TICKET_ID,CUSTOMER_ID,SEVERITY_TXT,AGENT_EMAIL,REQUESTER_PHONE,TICKET_STATUS,PROBLEM_DESCRIPTION,RESOLUTION_TEXT
+T-0001,7,1,agent1@example.invalid,+81-70-3001-4001,OPEN,Synthetic support request 0001. The user reports a repeatable login or order-status issue.,
+T-0002,14,2,agent2@example.invalid,+81-70-3002-4002,IN_PROGRESS,Synthetic support request 0002. The user reports a repeatable login or order-status issue.,
+T-0003,21,3,agent3@example.invalid,+81-70-3003-4003,RESOLVED,Synthetic support request 0003. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0004,28,4,agent4@example.invalid,+81-70-3004-4004,CLOSED,Synthetic support request 0004. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0005,35,5,agent5@example.invalid,+81-70-3005-4005,OPEN,Synthetic support request 0005. The user reports a repeatable login or order-status issue.,
+T-0006,42,1,agent6@example.invalid,+81-70-3006-4006,IN_PROGRESS,Synthetic support request 0006. The user reports a repeatable login or order-status issue.,
+T-0007,49,2,agent1@example.invalid,+81-70-3007-4007,RESOLVED,Synthetic support request 0007. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0008,6,3,agent2@example.invalid,+81-70-3008-4008,CLOSED,Synthetic support request 0008. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0009,13,4,agent3@example.invalid,+81-70-3009-4009,OPEN,Synthetic support request 0009. The user reports a repeatable login or order-status issue.,
+T-0010,20,5,agent4@example.invalid,+81-70-3010-4010,IN_PROGRESS,Synthetic support request 0010. The user reports a repeatable login or order-status issue.,
+T-0011,27,1,agent5@example.invalid,+81-70-3011-4011,RESOLVED,Synthetic support request 0011. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0012,34,2,agent6@example.invalid,+81-70-3012-4012,CLOSED,Synthetic support request 0012. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0013,41,3,agent1@example.invalid,+81-70-3013-4013,OPEN,Synthetic support request 0013. The user reports a repeatable login or order-status issue.,
+T-0014,48,4,agent2@example.invalid,+81-70-3014-4014,IN_PROGRESS,Synthetic support request 0014. The user reports a repeatable login or order-status issue.,
+T-0015,5,5,agent3@example.invalid,+81-70-3015-4015,RESOLVED,Synthetic support request 0015. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0016,12,1,agent4@example.invalid,+81-70-3016-4016,CLOSED,Synthetic support request 0016. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0017,19,2,agent5@example.invalid,+81-70-3017-4017,OPEN,Synthetic support request 0017. The user reports a repeatable login or order-status issue.,
+T-0018,26,3,agent6@example.invalid,+81-70-3018-4018,IN_PROGRESS,Synthetic support request 0018. The user reports a repeatable login or order-status issue.,
+T-0019,33,4,agent1@example.invalid,+81-70-3019-4019,RESOLVED,Synthetic support request 0019. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0020,40,5,agent2@example.invalid,+81-70-3020-4020,CLOSED,Synthetic support request 0020. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0021,47,1,agent3@example.invalid,+81-70-3021-4021,OPEN,Synthetic support request 0021. The user reports a repeatable login or order-status issue.,
+T-0022,4,2,agent4@example.invalid,+81-70-3022-4022,IN_PROGRESS,Synthetic support request 0022. The user reports a repeatable login or order-status issue.,
+T-0023,11,3,agent5@example.invalid,+81-70-3023-4023,RESOLVED,Synthetic support request 0023. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0024,18,4,agent6@example.invalid,+81-70-3024-4024,CLOSED,Synthetic support request 0024. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0025,25,5,agent1@example.invalid,+81-70-3025-4025,OPEN,Synthetic support request 0025. The user reports a repeatable login or order-status issue.,
+T-0026,32,1,agent2@example.invalid,+81-70-3026-4026,IN_PROGRESS,Synthetic support request 0026. The user reports a repeatable login or order-status issue.,
+T-0027,39,2,agent3@example.invalid,+81-70-3027-4027,RESOLVED,Synthetic support request 0027. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0028,46,3,agent4@example.invalid,+81-70-3028-4028,CLOSED,Synthetic support request 0028. The user reports a repeatable login or order-status issue.,Issue resolved using the documented standard procedure.
+T-0029,3,4,agent5@example.invalid,+81-70-3029-4029,OPEN,Synthetic support request 0029. The user reports a repeatable login or order-status issue.,
+T-0030,10,5,agent6@example.invalid,+81-70-3030-4030,IN_PROGRESS,Synthetic support request 0030. The user reports a repeatable login or order-status issue.,
