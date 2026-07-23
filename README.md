@@ -34,7 +34,7 @@ python3 scripts/score_oracle_ai_feature_readiness.py \
 
 ### 2. Review the config
 
-Edit `hr_select_ai_config.json` or copy `examples/select_ai_rag_config.json`.
+Edit the generated `hr_select_ai_config.json` for the target environment.
 
 Use existing Oracle credential object names only. Do not place secret values in the file.
 
