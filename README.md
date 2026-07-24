@@ -1,6 +1,20 @@
 # Oracle AI Ready Data Skill
 
-This project evaluates Oracle Database metadata and Oracle AI feature readiness, then generates a reviewable Select AI NL2SQL and Select AI RAG setup package.
+This project evaluates Oracle Database metadata and Oracle AI feature readiness, generates Markdown reports and optional self-contained HTML reports, then creates a reviewable Select AI NL2SQL and Select AI RAG setup package.
+
+## What changed in v0.3
+
+Version 0.3 improves the data-readiness report workflow without changing the
+existing readiness score formulas:
+
+1. Generate next actions only from unresolved findings.
+2. Review comment quality separately from comment presence.
+3. Flag numeric/date-like values stored in text columns for manual review.
+4. Generate an optional self-contained HTML report with `--html-output`.
+5. Add BAD_AI_READY before/after regression tests and report samples.
+
+Comment-quality and semantic-type findings are advisory in v0.3 and do not
+change the existing dimension or overall scores.
 
 ## What changed in v0.2
 
@@ -18,7 +32,22 @@ The scripts require Python 3.10 or later and use the standard library only.
 
 ## Quick start
 
-### 1. Assess feature readiness
+### 1. Assess data readiness
+
+```bash
+sql -s admin/****@adb \
+  @scripts/oracle_ai_ready_collect.sql HR % scan
+
+python3 scripts/score_oracle_ai_ready_scan.py \
+  oracle_ai_ready_scan_HR_scan.out \
+  --profile scan \
+  --language ja \
+  --output oracle_ai_ready_scan_HR.md \
+  --html-output oracle_ai_ready_scan_HR.html \
+  --sql-output oracle_ai_ready_improvement_HR.sql
+```
+
+### 2. Assess feature readiness
 
 ```bash
 sql -s admin/****@adb \
@@ -32,7 +61,7 @@ python3 scripts/score_oracle_ai_feature_readiness.py \
   --config-output hr_select_ai_config.json
 ```
 
-### 2. Review the config
+### 3. Review the config
 
 Edit `hr_select_ai_config.json` or copy `examples/select_ai_rag_config.json`.
 
@@ -54,7 +83,7 @@ For RAG, review:
 - refresh rate
 - source/citation settings
 
-### 3. Generate setup SQL
+### 4. Generate setup SQL
 
 ```bash
 python3 scripts/generate_select_ai_setup.py \
@@ -62,11 +91,11 @@ python3 scripts/generate_select_ai_setup.py \
   --output-dir generated_select_ai_setup
 ```
 
-### 4. Run preflight, setup, and smoke tests
+### 5. Run preflight, setup, and smoke tests
 
 Review every file before running it. Start with `01_preflight.sql`. Keep `RUNSQL` commented until `SHOWSQL` is correct.
 
-### 5. Verify stored configuration
+### 6. Verify stored configuration
 
 ```bash
 sql -s admin/****@adb \

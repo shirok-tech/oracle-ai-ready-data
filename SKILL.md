@@ -40,6 +40,17 @@ python3 scripts/score_oracle_ai_ready_scan.py \
   --sql-output hr_scan_improvement.sql
 ```
 
+Use `--html-output hr_scan_report.html` when the user requests an optional
+self-contained HTML report. Markdown reports and optional self-contained HTML
+reports are generated from the same assessment model.
+
+The data assessment output includes mandatory comment-presence gates, advisory
+comment-quality findings, and advisory semantic-type mismatch warnings. Comment
+quality and semantic-type mismatch findings do not change the score in v0.3.0.
+Generate next actions only from unresolved findings, manual-review items, and
+profile-specific requirements; do not repeat actions for findings already
+resolved.
+
 Use `rag` instead of `scan` when the user asks about document retrieval, embeddings, vector search, or agent RAG.
 
 Always enforce these gates:
