@@ -184,7 +184,7 @@ def render(result: Mapping[str, object], language: str) -> str:
             "",
             "## Recommended next step",
             "",
-            "Use `examples/select_ai_rag_config.json` as a reviewed configuration, then run `scripts/generate_select_ai_setup.py` to create preflight, profile, vector-index, smoke-test, verification, and rollback SQL files. Runtime smoke tests are required before calling the environment ready.",
+            "Review the generated JSON configuration, then run `scripts/generate_select_ai_setup.py` to create preflight, profile, vector-index, smoke-test, verification, and rollback SQL files. Runtime smoke tests are required before calling the environment ready.",
             "",
         ]
     )

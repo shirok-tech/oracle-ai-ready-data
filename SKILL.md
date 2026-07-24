@@ -89,7 +89,7 @@ Interpret results precisely:
 
 ## Select AI setup generation
 
-Start from `examples/select_ai_rag_config.json` or a config emitted by the feature scorer. Require these inputs:
+Start from a configuration emitted by the feature scorer. Require these inputs:
 
 - Target schema owner.
 - Existing AI provider credential object name.
@@ -102,7 +102,7 @@ Generate the package:
 
 ```bash
 python3 scripts/generate_select_ai_setup.py \
-  examples/select_ai_rag_config.json \
+  hr_select_ai_config.json \
   --output-dir generated_select_ai_setup
 ```
 
