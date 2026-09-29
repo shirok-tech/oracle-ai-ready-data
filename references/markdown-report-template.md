@@ -35,6 +35,16 @@
 - Generate actions dynamically from unresolved findings, manual-review items, and profile-specific requirements.
 - Omit actions for findings that are already resolved.
 
+## AI Semantics Readiness (Advisory)
+
+- Collection states and diagnostics for scope, annotations, and domains.
+- Visible session context and collected scope intersected with the original scan.
+- Distinct annotated, direct, inherited, unknown-origin and domain-linked columns;
+  table annotation presence; coverage (N/A when unavailable or denominator zero).
+- Annotation names, values and dictionary provenance, including valueless labels.
+- Human review of business meaning, independently from counts and score/gates.
+- Separate runtime stages in `semantics-evidence-template.md`.
+
 ## HTML output
 
 The same report model can also generate an optional self-contained HTML report.
@@ -43,7 +53,8 @@ The same report model can also generate an optional self-contained HTML report.
 
 - SHOWPROMPT result
 - SHOWSQL review
-- Optional RUNSQL result
+- Saved SQL execution result
+- Optional RUNSQL result from a separate generation trial
 - RAG known-answer test
 - Source/citation test
 - Stateless GENERATE test

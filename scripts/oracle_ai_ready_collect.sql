@@ -6,6 +6,8 @@
 --
 -- This script is read-only. It queries ALL_* dictionary views visible to the connected user.
 
+-- Do not inherit ECHO ON: echoed SQL would corrupt the sectioned CSV spool.
+set echo off
 set define on
 set verify off
 set feedback off

@@ -1,0 +1,181 @@
+{
+  "format": "oracle-ai-semantics-v1",
+  "records": [
+    {
+      "type": "context",
+      "session_user": "ADB_USER",
+      "target_owner": "BAD_AI_READY"
+    },
+    {
+      "type": "table",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T02"
+    },
+    {
+      "type": "column",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T02",
+      "column_name": "C01"
+    },
+    {
+      "type": "column",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T02",
+      "column_name": "C02"
+    },
+    {
+      "type": "column",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T02",
+      "column_name": "C03"
+    },
+    {
+      "type": "table",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T03"
+    },
+    {
+      "type": "column",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T03",
+      "column_name": "C01"
+    },
+    {
+      "type": "column",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T03",
+      "column_name": "C02"
+    },
+    {
+      "type": "column",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T03",
+      "column_name": "C03"
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_D01",
+      "object_type": "DOMAIN",
+      "column_name": null,
+      "annotation_name": "ALIASES",
+      "annotation_value": "Order status, 注文状態, 注文ステータス",
+      "domain_owner": null,
+      "domain_name": null
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_D01",
+      "object_type": "DOMAIN",
+      "column_name": null,
+      "annotation_name": "DESCRIPTION",
+      "annotation_value": "MAP_PROOF_V1: Order status code. 有効な注文 means active orders.",
+      "domain_owner": null,
+      "domain_name": null
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_D01",
+      "object_type": "DOMAIN",
+      "column_name": null,
+      "annotation_name": "VALUES",
+      "annotation_value": "Q7 = active (有効な注文); X9 = cancelled (取消済みの注文)",
+      "domain_owner": null,
+      "domain_name": null
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_T02",
+      "object_type": "TABLE",
+      "column_name": "C03",
+      "annotation_name": "ALIASES",
+      "annotation_value": "Order status, 注文状態, 注文ステータス",
+      "domain_owner": null,
+      "domain_name": null
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_T02",
+      "object_type": "TABLE",
+      "column_name": "C03",
+      "annotation_name": "DESCRIPTION",
+      "annotation_value": "MAP_PROOF_V1: Order status code. 有効な注文 means active orders.",
+      "domain_owner": null,
+      "domain_name": null
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_T02",
+      "object_type": "TABLE",
+      "column_name": "C03",
+      "annotation_name": "VALUES",
+      "annotation_value": "Q7 = active (有効な注文); X9 = cancelled (取消済みの注文)",
+      "domain_owner": null,
+      "domain_name": null
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_T03",
+      "object_type": "TABLE",
+      "column_name": "C03",
+      "annotation_name": "ALIASES",
+      "annotation_value": "Order status, 注文状態, 注文ステータス",
+      "domain_owner": "BAD_AI_READY",
+      "domain_name": "AIRD_D01"
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_T03",
+      "object_type": "TABLE",
+      "column_name": "C03",
+      "annotation_name": "DESCRIPTION",
+      "annotation_value": "MAP_PROOF_V1: Order status code. 有効な注文 means active orders.",
+      "domain_owner": "BAD_AI_READY",
+      "domain_name": "AIRD_D01"
+    },
+    {
+      "type": "annotation",
+      "owner": "BAD_AI_READY",
+      "object_name": "AIRD_T03",
+      "object_type": "TABLE",
+      "column_name": "C03",
+      "annotation_name": "VALUES",
+      "annotation_value": "Q7 = active (有効な注文); X9 = cancelled (取消済みの注文)",
+      "domain_owner": "BAD_AI_READY",
+      "domain_name": "AIRD_D01"
+    },
+    {
+      "type": "domain",
+      "owner": "BAD_AI_READY",
+      "table_name": "AIRD_T03",
+      "column_name": "C03",
+      "domain_owner": "BAD_AI_READY",
+      "domain_name": "AIRD_D01"
+    },
+    {
+      "type": "status",
+      "component": "scope",
+      "state": "collected",
+      "diagnostic": "Normalized from displayed successful dictionary query output in the user-provided draft."
+    },
+    {
+      "type": "status",
+      "component": "annotations",
+      "state": "collected",
+      "diagnostic": "Normalized from displayed successful dictionary query output in the user-provided draft."
+    },
+    {
+      "type": "status",
+      "component": "domains",
+      "state": "collected",
+      "diagnostic": "Normalized from displayed successful dictionary query output in the user-provided draft."
+    }
+  ]
+}

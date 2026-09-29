@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.4.0 - 2026-09-29
+
+- Fixed inherited SQLcl ECHO ON corrupting the base collector's spool by disabling
+  echo before SPOOL. Reject echoed SQL, missing/malformed mandatory sections and
+  inconsistent inventories before scoring, while retaining valid empty scopes.
+- Removed the unnecessary SQLCASE command from the supplementary collector to
+  avoid the Obsolete warning observed in SQLcl 25.4.
+- Added an optional, read-only annotation/domain collector generated locally with
+  validated scope, bind parameters, capability probes, and JSON-safe output.
+- Added `--semantics-input` and a shared bilingual AI Semantics Readiness
+  (Advisory) section to Markdown and self-contained HTML reports.
+- Distinguished successful empty collection, not collected, confirmed unsupported,
+  confirmed permission denial, undetermined unavailability, and collection errors.
+- Added distinct-column coverage, table annotation presence, direct/domain/unknown
+  provenance, domain associations, and independent runtime evidence guidance.
+- Added part 3 reproduction SQL generation, manual evidence records, fixtures,
+  regression tests, and sample reports. Prior user results are explicitly labeled.
+- Preserved all score formulas, weights, COMMENT gates, valid existing collector
+  inputs, profile defaults, and RAG behavior.
+- Recorded user-completed Database revalidation on 2026-09-23 (Oracle AI Database
+  26ai 23.26.3.3.0, SQLcl 25.4), including Japanese/English HTML visual checks.
+  The final report distinguishes these results from local tests, historical Select
+  AI trials, and the generated DDL package that was not rerun in a new environment.
+
 ## 0.3.0 - 2026-07-25
 
 - Added optional self-contained HTML reports with `--html-output`.

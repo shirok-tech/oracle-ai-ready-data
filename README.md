@@ -2,6 +2,54 @@
 
 This project evaluates Oracle Database metadata and Oracle AI feature readiness, generates Markdown reports and optional self-contained HTML reports, then creates a reviewable Select AI NL2SQL and Select AI RAG setup package.
 
+## What changed in v0.4.0
+
+Version 0.4.0 adds **AI Semantics Readiness (Advisory)**: optional collection of
+table/column annotations and column domain associations, distinct-column coverage,
+and dictionary-based provenance in Japanese/English Markdown and self-contained
+HTML. Collection success with zero rows is distinguished from missing evidence,
+confirmed unsupported/denied access, undetermined unavailability, and errors.
+Existing score formulas, weights, COMMENT gates, and RAG behavior are unchanged.
+
+The existing profile generator already supports `annotations=true` and SHOWPROMPT;
+no new profile attribute or model default is introduced. Annotation counts do not
+prove business meaning or SQL correctness. Runtime evidence remains a separate
+human review, with a [recording template](references/semantics-evidence-template.md).
+
+See [optional collection and reporting](docs/USAGE.md#optional-annotationdomain-assessment-v040),
+[format and limitations](references/annotation-guidance.md), and the
+[part 3 reproduction package](examples/bad_ai_ready_part3/README.md).
+The part 3 results describe prior user observations, not executions by this update.
+The user completed Database revalidation on Oracle AI Database 26ai 23.26.3.3.0
+with SQLcl 25.4 on **2026-09-23**, including Japanese/English HTML visual checks.
+See the [final validation report](docs/v0.4-validation-complete.md),
+[v0.4.0 release notes](docs/releases/v0.4.0.md), and the
+[part 3 article manuscript](docs/articles/oracle-ai-ready-data-part3.md).
+The article is prepared for Qiita; no Qiita publication is claimed here.
+
+Generate the optional read-only collector locally, then review and execute it in
+an authorized SQLcl session using the same scope as the normal scan:
+
+```bash
+python3 scripts/generate_semantics_collector.py \
+  --owner HR --table-like '%' \
+  --output collect_semantics.sql --spool-file hr_semantics_r01.json
+
+python3 scripts/score_oracle_ai_ready_scan.py oracle_ai_ready_scan_HR_scan.out \
+  --semantics-input hr_semantics_r01.json --language ja \
+  --output hr_scan_report.md --html-output hr_scan_report.html
+```
+
+**After updating, regenerate previously generated semantics SQL.** The normal
+collector disables ECHO before SPOOL, and the scorer rejects malformed scans
+instead of treating them as empty inventories. Preserve old evidence and
+recollect rejected scans in a fresh output directory.
+
+A valid zero-object scope retains the legacy score/gate behavior, including
+0.97/pass; it is **not evidence that any data is AI Ready**. Runtime SQL
+correctness remains a separate verification step. Revalidation used the existing
+lab; the complete newly generated DDL package was not rerun in a new environment.
+
 ## What changed in v0.3
 
 Version 0.3 improves the data-readiness report workflow without changing the
@@ -93,7 +141,9 @@ python3 scripts/generate_select_ai_setup.py \
 
 ### 5. Run preflight, setup, and smoke tests
 
-Review every file before running it. Start with `01_preflight.sql`. Keep `RUNSQL` commented until `SHOWSQL` is correct.
+Review every file before running it. Start with `01_preflight.sql`. Save and review
+the `SHOWSQL` output, then execute that saved SQL to validate it. Optional `RUNSQL`
+is a separate generation trial; keep it commented by default.
 
 ### 6. Verify stored configuration
 
@@ -133,6 +183,8 @@ A passing configuration report still requires runtime testing of provider connec
 ├── references/
 └── scripts/
     ├── oracle_ai_ready_collect.sql
+    ├── generate_semantics_collector.py
+    ├── oracle_ai_semantics_collect.sql.in
     ├── oracle_ai_feature_collect.sql
     ├── score_oracle_ai_ready_scan.py
     ├── score_oracle_ai_feature_readiness.py

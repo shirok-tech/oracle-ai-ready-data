@@ -5,6 +5,9 @@ __pycache__/
 *.py[cod]
 generated_select_ai_setup/
 dist/
+# Local Database evidence and trial archives are not public release artifacts.
+/validation_*/
+/validation_*.zip
 *_report.md
 *_improvement.sql
 *_setup.sql

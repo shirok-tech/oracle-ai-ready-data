@@ -22,6 +22,7 @@ import argparse
 import csv
 import datetime as dt
 import io
+import json
 import re
 import sys
 from html import escape as html_escape
@@ -211,8 +212,6 @@ def col_key(row):
 
 def strip_sqlcl_noise(line):
     line = line.rstrip("\n")
-    if line.startswith("SQL> "):
-        line = line[5:]
     stripped = line.strip()
     if not stripped:
         return ""
@@ -221,6 +220,8 @@ def strip_sqlcl_noise(line):
     if stripped.lower().startswith("elapsed:"):
         return None
     if ROWCOUNT_RE.match(stripped):
+        return None
+    if re.fullmatch(r"no rows selected\.?", stripped, re.I):
         return None
     if stripped == "spool off":
         return None
@@ -237,46 +238,135 @@ def write_text(path, text):
         handle.write(text)
 
 
+def csv_quote_state(line, quoted, line_number):
+    """Track true quoted fields, rejecting bare quotes in unquoted fields.
+
+    csv.reader(strict=True) still accepts bare quotes, so quote parity alone
+    could misclassify an echoed SQL line as a multiline metadata value.
+    """
+    field_start = not quoted
+    index = 0
+    while index < len(line):
+        char = line[index]
+        if char == '"':
+            if quoted:
+                if index + 1 < len(line) and line[index + 1] == '"':
+                    index += 2
+                    continue
+                quoted = False
+            elif field_start:
+                quoted = True
+            else:
+                raise ValueError("invalid CSV quoting at line {0}".format(line_number))
+            field_start = False
+        elif not quoted:
+            field_start = char == ","
+        index += 1
+    return quoted
+
+
 def parse_sections(path):
+    """Reject corrupt spools before an unrecognized scan can look like empty scope.
+
+    Section markers and SQLcl noise are recognized only between CSV records;
+    the same text inside a quoted multiline comment is metadata, not a command.
+    """
     raw_sections = {}  # type: MutableMapping[str, List[str]]
     current = None  # type: Optional[str]
+    in_quoted_record = False
 
     with path.open("r", encoding="utf-8-sig", errors="replace") as handle:
-        for original in handle:
-            line = original.rstrip("\n")
-            marker = SECTION_RE.match(line.strip())
-            if marker:
-                current = marker.group(1).lower()
-                raw_sections.setdefault(current, [])
-                continue
-            if END_SECTION_RE.match(line.strip()):
-                current = None
-                continue
-            if line.strip().startswith("@@END_ORACLE_AI_READY_COLLECTOR"):
-                current = None
-                continue
+        for line_number, original in enumerate(handle, 1):
+            line = original.rstrip("\r\n")
+            if not in_quoted_record:
+                if re.match(r"^\s*SQL>", line, re.I):
+                    raise ValueError(
+                        "invalid collector input at line {0}: SQL> prompt / echoed SQL detected; "
+                        "recollect with SET ECHO OFF before SPOOL".format(line_number)
+                    )
+                marker = SECTION_RE.match(line.strip())
+                if marker:
+                    if current is not None:
+                        raise ValueError("unclosed collector section: {0}".format(current))
+                    current = marker.group(1).lower()
+                    if current in raw_sections:
+                        raise ValueError("duplicate collector section: {0}".format(current))
+                    raw_sections[current] = []
+                    continue
+                if END_SECTION_RE.match(line.strip()):
+                    if current is None:
+                        raise ValueError("collector section end without a section at line {0}".format(line_number))
+                    current = None
+                    continue
+                if line.strip().startswith("@@END_ORACLE_AI_READY_COLLECTOR"):
+                    if current is not None:
+                        raise ValueError("unclosed collector section: {0}".format(current))
+                    continue
             if current:
-                cleaned = strip_sqlcl_noise(line)
+                cleaned = line if in_quoted_record else strip_sqlcl_noise(line)
                 if cleaned is not None:
+                    in_quoted_record = csv_quote_state(cleaned, in_quoted_record, line_number)
                     raw_sections[current].append(cleaned)
 
+    if current is not None:
+        raise ValueError("unclosed collector section: {0}".format(current))
+
     parsed = {}  # type: Dict[str, List[Row]]
+    headers = {}
     for name, lines in raw_sections.items():
-        csv_text = "\n".join(line for line in lines if line.strip())
+        csv_text = "\n".join(lines)
         if not csv_text.strip():
             parsed[name] = []
+            headers[name] = []
             continue
         try:
-            reader = csv.DictReader(io.StringIO(csv_text))
+            reader = csv.reader(io.StringIO(csv_text), strict=True)
+            raw_header = next((row for row in reader if row), [])
+            fields = [norm_key(key) for key in raw_header]
+            if not fields or any(not key for key in fields) or len(set(fields)) != len(fields):
+                raise ValueError("invalid or duplicate CSV headers in section {0}".format(name))
+            headers[name] = fields
             rows = []  # type: List[Row]
             for row in reader:
-                normalized = {norm_key(k): clean_cell(v) for k, v in row.items() if k is not None}
-                if any(present(v) for v in normalized.values()):
+                if not row:
+                    continue
+                if len(row) != len(fields):
+                    raise ValueError("invalid CSV row width in section {0}: expected {1}, got {2}".format(name, len(fields), len(row)))
+                normalized = {key: clean_cell(value) for key, value in zip(fields, row)}
+                if name in {"run_context", "table_inventory", "column_inventory"} or any(present(v) for v in normalized.values()):
                     rows.append(normalized)
             parsed[name] = rows
         except csv.Error as exc:
             raise ValueError("failed to parse section {0!r} as CSV: {1}".format(name, exc))
+    validate_scan_sections(parsed, headers)
     return parsed
+
+
+def validate_scan_sections(sections, headers):
+    required = {
+        "run_context": ("TARGET_OWNER", "PROFILE"),
+        "table_inventory": ("OWNER", "TABLE_NAME"),
+        "column_inventory": ("OWNER", "TABLE_NAME", "COLUMN_NAME"),
+    }
+    for name, fields in required.items():
+        if name not in sections:
+            raise ValueError("missing required collector section: {0}".format(name))
+        # SQLcl may emit no header for a query returning no rows. A closed,
+        # empty inventory section is valid, unlike a missing section.
+        if headers[name] or name == "run_context":
+            missing = set(fields) - set(headers[name])
+            if missing:
+                raise ValueError("invalid CSV headers in {0}; missing: {1}".format(name, ", ".join(sorted(missing))))
+        for row in sections[name]:
+            if any(not present(row.get(field)) for field in fields):
+                raise ValueError("missing required values in collector section: {0}".format(name))
+    context = sections["run_context"]
+    if len(context) != 1 or context[0]["PROFILE"].lower() not in {"scan", "rag"}:
+        raise ValueError("run_context must contain one valid row with TARGET_OWNER and PROFILE (scan or rag)")
+    table_keys = {table_key(row) for row in sections["table_inventory"]}
+    column_tables = {table_key(row) for row in sections["column_inventory"]}
+    if table_keys != column_tables:
+        raise ValueError("inconsistent table_inventory and column_inventory: every table needs columns and every column needs a table")
 
 
 def parse_date(value):
@@ -549,7 +639,176 @@ def analyze_semantic_types(sections, data):
     return sorted(warnings, key=lambda item: (item["owner"], item["table_name"], item["column_name"]))
 
 
-def enrich_analysis(sections, data):
+SEMANTICS_STATES = {
+    "collected": ("収集成功", "Collected"),
+    "not_collected": ("未収集", "Not collected"),
+    "unsupported": ("非対応確認済み", "Confirmed unsupported"),
+    "permission_denied": ("権限不足確認済み", "Confirmed permission denied"),
+    "unavailable": ("原因未確定の利用不可", "Unavailable; cause undetermined"),
+    "error": ("収集エラー", "Collection error"),
+}
+
+
+def load_semantics(path):
+    """Read the optional collector's JSON without interpreting metadata as code."""
+    def unique_keys(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("duplicate semantics JSON key: {0}".format(key))
+            result[key] = value
+        return result
+
+    with Path(path).open(encoding="utf-8-sig") as handle:
+        payload = json.load(handle, object_pairs_hook=unique_keys)
+    validate_semantics(payload)
+    return payload
+
+
+def validate_semantics(payload):
+    if not isinstance(payload, dict) or payload.get("format") != "oracle-ai-semantics-v1":
+        raise ValueError("expected oracle-ai-semantics-v1 JSON")
+    records = payload.get("records")
+    if not isinstance(records, list):
+        raise ValueError("semantics records must be an array")
+    statuses = set()
+    context_count = 0
+    required = {
+        "table": ("owner", "table_name"),
+        "column": ("owner", "table_name", "column_name"),
+        "annotation": ("owner", "object_name", "object_type", "annotation_name"),
+        "domain": ("owner", "table_name", "column_name"),
+    }
+    for row in records:
+        if (not isinstance(row, dict) or not isinstance(row.get("type"), str)
+                or row["type"] not in set(required) | {"context", "status"}):
+            raise ValueError("invalid semantics record type")
+        if any(value is not None and not isinstance(value, (str, int, float)) for value in row.values()):
+            raise ValueError("semantics record fields must be scalar strings or numbers")
+        for key in required.get(row["type"], ()):
+            if not isinstance(row.get(key), str) or not row[key].strip():
+                raise ValueError("missing semantics {0}.{1}".format(row["type"], key))
+        if row["type"] == "domain" and not (clean_cell(row.get("domain_owner")) or clean_cell(row.get("domain_name"))):
+            raise ValueError("domain association needs a domain owner or name")
+        # Metadata text must remain text, including a legitimate literal 'NULL'.
+        for key, value in row.items():
+            if key not in {"error_code", "domain_association_id"} and value is not None and not isinstance(value, str):
+                raise ValueError("semantics {0} must be text or null".format(key))
+        if row["type"] == "context":
+            context_count += 1
+            if context_count > 1:
+                raise ValueError("duplicate semantics context")
+        if row["type"] == "status":
+            component = row.get("component")
+            if component not in {"scope", "annotations", "domains"} or component in statuses:
+                raise ValueError("invalid or duplicate semantics status component")
+            if row.get("state") not in SEMANTICS_STATES:
+                raise ValueError("invalid semantics collection state")
+            statuses.add(component)
+
+
+def analyze_ai_semantics(data, payload=None):
+    """Advisory only. Never feed these counts into score or COMMENT gates."""
+    if payload is not None:
+        validate_semantics(payload)
+    records = payload.get("records", []) if payload is not None else []
+    statuses = {name: {"state": "not_collected", "diagnostic": ""}
+                for name in ("scope", "annotations", "domains")}
+    context = {}
+    for row in records:
+        if row["type"] == "status":
+            statuses[row["component"]] = dict(row)
+        elif row["type"] == "context":
+            context = dict(row)
+
+    def key(row, table_field="table_name"):
+        return (clean_cell(row.get("owner")).upper(), clean_cell(row.get(table_field)).upper())
+
+    def column_key(row, table_field="table_name"):
+        return key(row, table_field) + (clean_cell(row.get("column_name")).upper(),)
+
+    base_tables = set(data.get("table_keys", []))
+    base_columns = set(data.get("col_keys", []))
+    scope_ok = statuses["scope"]["state"] == "collected"
+    scope_tables = {key(row) for row in records if row["type"] == "table"} & base_tables if scope_ok else set()
+    scope_columns = {column_key(row) for row in records if row["type"] == "column"
+                     and key(row) in scope_tables} & base_columns if scope_ok else set()
+    annotations_ok = scope_ok and statuses["annotations"]["state"] == "collected"
+    domains_ok = scope_ok and statuses["domains"]["state"] == "collected"
+    annotated, direct, inherited, unknown, table_annotations, linked = (set() for _ in range(6))
+    annotations, domains = [], []
+    excluded = 0
+    seen_annotations, seen_domains = set(), set()
+    for row in records:
+        kind = row["type"]
+        if not scope_ok:
+            # Partial inventory is not evidence that its semantic rows are out of scope.
+            continue
+        if kind == "annotation":
+            target = column_key(row, "object_name")
+            is_column = bool(target[2])
+            if row.get("object_type", "").upper() != "TABLE" or target[:2] not in scope_tables or (is_column and target not in scope_columns):
+                excluded += 1
+                continue
+            if not annotations_ok:
+                continue
+            domain_owner = clean_cell(row.get("domain_owner"))
+            domain_name = clean_cell(row.get("domain_name"))
+            declared_origin = clean_cell(row.get("origin")).upper()
+            if domain_owner and domain_name and declared_origin in {"", "DOMAIN_INHERITED"}:
+                origin = "DOMAIN_INHERITED"
+            elif (not domain_owner and not domain_name and "domain_owner" in row and "domain_name" in row
+                  and declared_origin in {"", "DIRECT"}):
+                origin = "DIRECT"
+            else:
+                origin = "UNKNOWN"
+            item = dict(row, origin=origin)
+            signature = (target, row.get("annotation_name"), row.get("annotation_value"), domain_owner, domain_name, origin)
+            if signature in seen_annotations:
+                continue
+            seen_annotations.add(signature)
+            annotations.append(item)
+            if is_column:
+                annotated.add(target)
+                {"DIRECT": direct, "DOMAIN_INHERITED": inherited, "UNKNOWN": unknown}[origin].add(target)
+            else:
+                table_annotations.add(target[:2])
+        elif kind == "domain":
+            target = column_key(row)
+            if target not in scope_columns:
+                excluded += 1
+                continue
+            if not domains_ok:
+                continue
+            signature = (target, row.get("domain_owner"), row.get("domain_name"), row.get("domain_column_name"))
+            if signature not in seen_domains:
+                seen_domains.add(signature)
+                linked.add(target)
+                domains.append(dict(row))
+    annotations.sort(key=lambda row: (key(row, "object_name"), row.get("column_name") or "", row["annotation_name"], row["origin"]))
+    domains.sort(key=lambda row: column_key(row))
+    return {
+        "statuses": statuses, "context": context,
+        "scope_state": statuses["scope"]["state"],
+        "annotations_state": statuses["annotations"]["state"],
+        "domains_state": statuses["domains"]["state"],
+        "total_tables": len(scope_tables) if scope_ok else None,
+        "total_columns": len(scope_columns) if scope_ok else None,
+        "scan_total_columns": len(base_columns),
+        "annotated_columns": len(annotated) if annotations_ok else None,
+        "direct_columns": len(direct) if annotations_ok else None,
+        "inherited_columns": len(inherited) if annotations_ok else None,
+        "unknown_origin_columns": len(unknown) if annotations_ok else None,
+        "domain_linked_columns": len(linked) if domains_ok else None,
+        "table_annotations": len(table_annotations) if annotations_ok else None,
+        "coverage": float(len(annotated)) / len(scope_columns) if annotations_ok and scope_columns else None,
+        "annotations": annotations, "domains": domains, "excluded_records": excluded,
+        "runtime_evidence": {name: "unverified" for name in
+                             ("dictionary_registration", "profile_settings", "showprompt", "sql_review", "saved_sql_execution", "runsql_trial")},
+    }
+
+
+def enrich_analysis(sections, data, semantics=None):
     data["comment_quality"] = analyze_comment_quality(sections, data)
     data["semantic_type_warnings"] = analyze_semantic_types(sections, data)
     table_key_set = set(data.get("table_keys", []))
@@ -557,6 +816,7 @@ def enrich_analysis(sections, data):
     data["source_missing_tables"] = [key for key in data.get("table_keys", []) if key not in source_tables]
     data["metrics"]["table_comment_quality_coverage"] = data["comment_quality"]["table_quality_coverage"]
     data["metrics"]["column_comment_quality_coverage"] = data["comment_quality"]["column_quality_coverage"]
+    data["ai_semantics"] = analyze_ai_semantics(data, semantics)
     return data
 
 
@@ -1241,6 +1501,123 @@ def render_semantic_markdown(data, lang):
     return lines
 
 
+def ai_semantics_sections(data, lang):
+    """One presentation model shared by Markdown and HTML."""
+    model = data.get("ai_semantics") or analyze_ai_semantics(data)
+    ja = lang == "ja"
+    label = lambda jp, en: jp if ja else en
+    value = lambda item: "N/A" if item is None else str(item)
+    status_rows = []
+    for component in ("scope", "annotations", "domains"):
+        record = model["statuses"][component]
+        state = record["state"]
+        status_rows.append([component, state + " / " + SEMANTICS_STATES[state][0 if ja else 1], record.get("diagnostic") or "—"])
+    coverage = "N/A" if model["coverage"] is None else "{0:.2f}%".format(model["coverage"] * 100)
+    metrics = [
+        [label("収集対象の表数", "Collected scope tables"), value(model["total_tables"])],
+        [label("収集対象の列数（重複排除）", "Collected scope distinct columns"), value(model["total_columns"])],
+        [label("元の評価対象列数", "Original scan columns"), value(model["scan_total_columns"])],
+        [label("表Annotationがある表数", "Tables with table annotations"), value(model["table_annotations"])],
+        ["Annotated columns", value(model["annotated_columns"])],
+        ["Direct columns", value(model["direct_columns"])],
+        ["Domain-inherited columns", value(model["inherited_columns"])],
+        [label("由来不明の列数", "Unknown-origin columns"), value(model["unknown_origin_columns"])],
+        ["Domain-linked columns", value(model["domain_linked_columns"])],
+        ["Column annotation coverage", coverage],
+        [label("対象外の意味情報レコード（除外）", "Excluded out-of-scope semantic records"), str(model["excluded_records"])],
+    ]
+    context = [[key, value(model["context"].get(key))] for key in
+               ("session_user", "current_schema", "target_owner", "table_like_pattern", "db_name", "con_name", "collected_at")]
+    annotation_rows = []
+    for row in model["annotations"]:
+        object_name = "{0}.{1}".format(row["owner"], row["object_name"])
+        if row.get("column_name"):
+            object_name += "." + row["column_name"]
+        category = row["annotation_name"].upper()
+        if category not in {"DESCRIPTION", "ALIASES", "VALUES"}:
+            category = label("その他", "Other")
+        annotation_rows.append([
+            object_name, "COLUMN" if row.get("column_name") else "TABLE", category,
+            row["annotation_name"], row.get("annotation_value") if row.get("annotation_value") is not None else label("（値なし）", "(valueless)"),
+            row["origin"], ".".join(filter(None, [row.get("domain_owner"), row.get("domain_name")])) or "—",
+        ])
+    domain_rows = [["{0}.{1}.{2}".format(row["owner"], row["table_name"], row["column_name"]),
+                    "{0}.{1}".format(row.get("domain_owner") or "?", row.get("domain_name") or "?"),
+                    row.get("domain_column_name") or "—"] for row in model["domains"]]
+    evidence_rows = [
+        [label("辞書登録（観測）", "Dictionary registration (observed)"),
+         label("収集値を参照。業務上の正しさは未確認", "See collected metadata; business meaning unverified")
+         if model["scope_state"] == "collected" and model["annotations_state"] == "collected" else label("未確認", "Unverified")],
+    ]
+    for jp, en in [("Profile設定", "Profile settings"), ("SHOWPROMPT確認", "SHOWPROMPT inspection"),
+                   ("生成SQLレビュー", "Generated SQL review"), ("保存SQLの実行", "Saved SQL execution"),
+                   ("別試行RUNSQL", "Separate RUNSQL trial")]:
+        evidence_rows.append([label(jp, en), label("未確認", "Unverified")])
+    return {
+        "notes": [
+            label("Annotation／Domainは任意のAdvisoryです。件数・coverageでスコアやCOMMENT必須ゲートは変わりません。",
+                  "Annotations and domains are optional advisory metadata. Counts and coverage do not change scores or mandatory COMMENT gates."),
+            label("coverageの母数は、補助Collectorの収集対象と元の評価対象が重なるdistinct列です。直接登録と継承が同じ列にある場合も全体では1列です。未収集・失敗・対象列0件はN/Aです。",
+                  "Coverage uses distinct columns shared by the collector scope and original scan. A column with both direct and inherited annotations counts once overall. Uncollected, failed, or zero-column scope is N/A."),
+            label("値なしAnnotationや任意ラベルも有効です。登録数は意味の正しさを保証しません。DESCRIPTION／ALIASES／VALUESを含む内容は業務担当者が確認してください。Domain名の ? は由来情報の不足です。",
+                  "Valueless annotations and arbitrary labels are valid. Registration counts do not prove semantic correctness. A business owner must review meaning, including DESCRIPTION, ALIASES, and VALUES. A ? in a domain identifier means missing provenance information."),
+            label("ALL_*で現セッションに見える範囲のみです。データ所有者と実行Userの可視性、収集日時、対象範囲を照合してください。View経由の継承や高度なDomain機能は未対応です。",
+                  "Only metadata visible to the current session through ALL_* is covered. Compare the data owner's and execution user's visibility, timestamps, and scope. View inheritance and advanced domain features are outside this version's scope."),
+            label("ランタイム証跡は references/semantics-evidence-template.md に独立して記録してください。RUNSQLは別の生成試行であり、レビューした保存SQLの実行ではありません。",
+                  "Record runtime evidence separately using references/semantics-evidence-template.md. RUNSQL is a separate generation trial, not execution of the reviewed saved SQL."),
+        ],
+        "tables": [
+            (label("収集状態", "Collection states"), ["Component", "State", "Diagnostic"], status_rows),
+            (label("集計", "Metrics"), ["Metric", "Value"], metrics),
+            (label("収集コンテキスト", "Collection context"), ["Field", "Value"], context),
+            (label("Annotationと由来", "Annotations and provenance"), ["Object", "Level", "Category", "Name", "Value", "Origin", "Domain"], annotation_rows),
+            (label("列のDomain関連付け", "Column domain associations"), ["Column", "Domain", "Domain column"], domain_rows),
+            (label("独立した検証事項", "Independent verification stages"), ["Stage", "Evidence"], evidence_rows),
+        ],
+    }
+
+
+def semantics_md_cell(value):
+    """Neutralize HTML and Markdown syntax; only our own <br> is markup."""
+    text = str(value) if value is not None else "—"
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = html_escape(text, quote=True)
+    for char in "\\`*_{}[]()|!~":
+        text = text.replace(char, "&#{0};".format(ord(char)))
+    return text.replace("\n", "<br>")
+
+
+def render_ai_semantics_markdown(data, lang):
+    presentation = ai_semantics_sections(data, lang)
+    lines = ["", "## 13. AI Semantics Readiness (Advisory)", ""]
+    lines.extend(presentation["notes"])
+    for title, headers, rows in presentation["tables"]:
+        lines.extend(["", "### " + title, "", "| " + " | ".join(headers) + " |",
+                      "| " + " | ".join("---" for _ in headers) + " |"])
+        if not rows:
+            rows = [["該当する収集済みレコードなし" if lang == "ja" else "No collected records"] + ["—"] * (len(headers) - 1)]
+        for row in rows:
+            lines.append("| " + " | ".join(semantics_md_cell(cell) for cell in row) + " |")
+    return lines
+
+
+def render_ai_semantics_html(data, lang):
+    presentation = ai_semantics_sections(data, lang)
+    esc = lambda value: html_escape(str(value), quote=True).replace("\n", "<br>")
+    parts = ['<section id="ai-semantics"><h2>AI Semantics Readiness (Advisory)</h2>']
+    parts.extend("<p>{0}</p>".format(esc(note)) for note in presentation["notes"])
+    for title, headers, rows in presentation["tables"]:
+        parts.append("<h3>{0}</h3><div class=\"table-wrap\"><table><thead><tr>{1}</tr></thead><tbody>".format(
+            esc(title), "".join("<th>{0}</th>".format(esc(header)) for header in headers)))
+        if not rows:
+            rows = [["該当する収集済みレコードなし" if lang == "ja" else "No collected records"] + ["—"] * (len(headers) - 1)]
+        for row in rows:
+            parts.append("<tr>{0}</tr>".format("".join("<td>{0}</td>".format(esc(cell)) for cell in row)))
+        parts.append("</tbody></table></div>")
+    parts.append("</section>")
+    return "".join(parts)
+
+
 def build_sql_text(data, max_sql, max_items, lang):
     comment_sql, omitted_sql = make_comment_sql(data, max_sql, lang)
     advisory_sql = make_advisory_sql(data, max_items, lang)
@@ -1442,6 +1819,7 @@ def render_markdown(data, source, max_sql, max_items, lang):
         ])
         for index, action in enumerate(actions, 1):
             lines.append("{0}. {1}".format(index, action))
+    lines.extend(render_ai_semantics_markdown(data, lang))
     return "\n".join(lines).rstrip() + "\n", sql_text
 
 
@@ -1564,6 +1942,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;
 <section><h2>Semantic type mismatch</h2><p>{semantic_note}</p><div class="table-wrap"><table><thead><tr><th>Column</th><th>DB type</th><th>Inferred</th><th>Evidence</th><th>Recommendation</th></tr></thead><tbody>{semantic_rows}</tbody></table></div></section>
 <section><h2>{actions_heading}</h2><ol>{actions}</ol></section>
 <section><h2>{sql_heading}</h2><details><summary>{sql_summary}</summary><pre>{sql}</pre></details></section>
+{ai_semantics}
 </main></body></html>'''.format(
         lang="ja" if lang == "ja" else "en", title=esc(title), css=css, source=esc(source.name), overall=esc(score(overall)),
         gate_class=html_status_class(gate), gate=esc(gate.upper()), quality_class=html_status_class(quality), quality=esc(quality.upper()),
@@ -1579,6 +1958,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;
         semantic_note=esc("推定結果のため、自動的な型変更は行いません。" if lang == "ja" else "Heuristic only; no automatic type changes are generated."),
         semantic_rows="".join(semantic_rows), actions_heading=esc("次のアクション" if lang == "ja" else "Next actions"), actions=action_items,
         sql_heading=esc("改善SQL" if lang == "ja" else "Improvement SQL"), sql_summary=esc("SQLを表示" if lang == "ja" else "Show SQL"), sql=esc(sql_text),
+        ai_semantics=render_ai_semantics_html(data, lang),
     )
     return html
 
@@ -1593,6 +1973,7 @@ def main(argv=None):
     parser.add_argument("--output", "-o", help="write Markdown report to this file")
     parser.add_argument("--html-output", help="write a self-contained HTML report to this file")
     parser.add_argument("--sql-output", help="write improvement SQL to this file")
+    parser.add_argument("--semantics-input", help="optional oracle-ai-semantics-v1 collector JSON (advisory only)")
     args = parser.parse_args(argv)
 
     path = Path(args.scan_file)
@@ -1604,7 +1985,8 @@ def main(argv=None):
         sections = parse_sections(path)
         profile = get_profile(sections.get("run_context", []), args.profile)
         data = calculate(sections, profile)
-        enrich_analysis(sections, data)
+        semantics = load_semantics(Path(args.semantics_input)) if args.semantics_input else None
+        enrich_analysis(sections, data, semantics)
         markdown, sql_text = render_markdown(data, source=path, max_sql=max(0, args.max_sql), max_items=max(0, args.max_items), lang=args.language)
         html_text = render_html(data, source=path, sql_text=sql_text, lang=args.language) if args.html_output else None
     except Exception as exc:
