@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Oracle Database AI Ready 評価レポート</title><style>
+:root{--bg:#f4f7fb;--panel:#fff;--text:#1f2937;--muted:#64748b;--line:#dbe4ef;--accent:#2563eb;--pass:#15803d;--warn:#b45309;--fail:#b91c1c;--info:#475569}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.6}
+main{max-width:1180px;margin:0 auto;padding:28px}h1{font-size:2rem;margin:0 0 8px}h2{margin-top:38px;border-bottom:2px solid var(--line);padding-bottom:8px}h3{margin-top:24px}.muted{color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 4px 18px rgba(15,23,42,.05)}.card .label{color:var(--muted);font-size:.9rem}.card .value{font-size:1.65rem;font-weight:700;margin-top:4px}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;font-weight:700;font-size:.78rem}.badge.pass{background:#dcfce7;color:var(--pass)}.badge.warning{background:#ffedd5;color:var(--warn)}.badge.fail{background:#fee2e2;color:var(--fail)}.badge.info{background:#e2e8f0;color:var(--info)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin:18px 0;box-shadow:0 4px 18px rgba(15,23,42,.04)}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f8fafc}.bar{height:10px;background:#e2e8f0;border-radius:999px;overflow:hidden;min-width:180px}.bar span{display:block;height:100%;background:var(--accent)}
+pre{white-space:pre-wrap;word-break:break-word;background:#0f172a;color:#e2e8f0;border-radius:10px;padding:16px;overflow:auto}details summary{cursor:pointer;font-weight:700;padding:8px 0}ol{padding-left:1.4rem}@media print{body{background:#fff}main{max-width:none;padding:0}.card,section{box-shadow:none;break-inside:avoid}}
+</style></head>
+<body><main>
+<header><h1>Oracle Database AI Ready 評価レポート</h1><p class="muted">minimal_scan.csv</p></header>
+<div class="cards">
+<div class="card"><div class="label">Overall score</div><div class="value">0.10</div></div>
+<div class="card"><div class="label">Mandatory comment gate</div><div class="value"><span class="badge fail">FAIL</span></div></div>
+<div class="card"><div class="label">Comment quality</div><div class="value"><span class="badge fail">FAIL</span></div></div>
+<div class="card"><div class="label">Semantic warnings</div><div class="value">0</div></div>
+</div>
+<section><h2>エグゼクティブサマリー</h2><p><strong>結論:</strong> 必須コメントゲート未達のため、要求ポリシー上は未Ready</p><div class="table-wrap"><table><tbody>
+<tr><th>Schema</th><td>BAD_AI_READY</td><th>Profile</th><td>scan</td></tr>
+<tr><th>Tables</th><td>2</td><th>Columns</th><td>6</td></tr>
+<tr><th>Scan timestamp</th><td colspan="3"></td></tr>
+</tbody></table></div></section>
+<section><h2>Dimensionスコア</h2><div class="table-wrap"><table><thead><tr><th>Dimension</th><th>Weight</th><th>Progress</th><th>Score</th></tr></thead><tbody><tr><td>Clean</td><td>20.0%</td><td><div class="bar"><span style="width:0.0%"></span></div></td><td>0.00</td></tr><tr><td>Contextual</td><td>25.0%</td><td><div class="bar"><span style="width:0.0%"></span></div></td><td>0.00</td></tr><tr><td>Consumable</td><td>15.0%</td><td><div class="bar"><span style="width:0.0%"></span></div></td><td>0.00</td></tr><tr><td>Current</td><td>15.0%</td><td><div class="bar"><span style="width:0.0%"></span></div></td><td>0.00</td></tr><tr><td>Correlated</td><td>15.0%</td><td><div class="bar"><span style="width:0.0%"></span></div></td><td>0.00</td></tr><tr><td>Compliant</td><td>10.0%</td><td><div class="bar"><span style="width:100.0%"></span></div></td><td>1.00</td></tr></tbody></table></div></section>
+<section><h2>メトリクス詳細</h2><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Value</th><th>Status</th></tr></thead><tbody><tr><td>Table comment coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Column comment coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Table comment quality coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Column comment quality coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>PK coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>FK coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Relationship coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Constraint coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Table stats coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Column stats coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Recent stats coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Freshness coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Source metadata coverage</td><td>0.0%</td><td><span class="badge fail">FAIL</span></td></tr><tr><td>Text-bearing table coverage</td><td>0.0%</td><td><span class="badge info">INFO</span></td></tr><tr><td>Vector table coverage</td><td>0.0%</td><td><span class="badge info">INFO</span></td></tr><tr><td>Sensitive documentation</td><td>100.0%</td><td><span class="badge pass">PASS</span></td></tr><tr><td>Broad data grant absence</td><td>100.0%</td><td><span class="badge pass">PASS</span></td></tr></tbody></table></div></section>
+<section><h2>主要な発見事項</h2><p>Mandatory comment gate が fail です。table comment 欠落 2 件、column comment 欠落 6 件があります。</p><p>主キー未検出のテーブルが 2 件あります。RAG/agent応答の根拠行を安定して参照しづらくなります。</p><p>統計情報が未取得または古いテーブルが 2 件あります。Clean/Current score の主な減点要因です。</p><p>鮮度を示す日時列が未検出のテーブルが 2 件あります。データの新しさを説明しづらくなります。</p><p>テキスト候補列を持つテーブルは 0.0% です。RAG対象テーブルを明確化してください。</p><p>VECTOR型カラムは未検出です。embeddingを別スキーマや外部サービスで管理している場合は設計書に明記してください。</p></section>
+<section><h2>コメント品質</h2><p>Table 0.0% / Column 0.0%</p><div class="table-wrap"><table><thead><tr><th>Object</th><th>Issue</th><th>Current comment</th></tr></thead><tbody><tr><td>BAD_AI_READY.AIRD_T02</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T03</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T02.C01</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T02.C02</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T02.C03</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T03.C01</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T03.C02</td><td>missing</td><td></td></tr><tr><td>BAD_AI_READY.AIRD_T03.C03</td><td>missing</td><td></td></tr></tbody></table></div></section>
+<section><h2>Semantic type mismatch</h2><p>推定結果のため、自動的な型変更は行いません。</p><div class="table-wrap"><table><thead><tr><th>Column</th><th>DB type</th><th>Inferred</th><th>Evidence</th><th>Recommendation</th></tr></thead><tbody><tr><td colspan="5">Semantic type mismatch候補はありません。</td></tr></tbody></table></div></section>
+<section><h2>次のアクション</h2><ol><li>欠落しているテーブルコメント2件、カラムコメント6件を補完し、Mandatory comment gateをpassにします。</li><li>構造・運用メタデータを改善します: 主キー未定義2表、未取得または古い統計2表、鮮度列未定義2表、出所列未定義2表。</li></ol></section>
+<section><h2>改善SQL</h2><details><summary>SQLを表示</summary><pre>-- Remediation: missing table comments
+-- Reason: テーブルコメントがないため、Contextual score と mandatory comment gate が低下します。
+-- Purpose: テーブルの業務目的、粒度、更新頻度、AI利用時の注意点を明文化します。
+-- Review: TODOコメントを業務オーナーが実際の説明に置き換えてから実行してください。
+COMMENT ON TABLE &quot;BAD_AI_READY&quot;.&quot;AIRD_T02&quot; IS &#x27;TODO: describe business purpose, grain, refresh cadence, owner, and AI usage guidance for BAD_AI_READY.AIRD_T02.&#x27;;
+COMMENT ON TABLE &quot;BAD_AI_READY&quot;.&quot;AIRD_T03&quot; IS &#x27;TODO: describe business purpose, grain, refresh cadence, owner, and AI usage guidance for BAD_AI_READY.AIRD_T03.&#x27;;
+
+-- Remediation: missing column comments
+-- Reason: カラムコメントがないため、AIが列の意味、単位、NULLの意味、機微性を誤解する可能性があります。
+-- Purpose: 各カラムの意味、形式、許容値、NULLの扱い、出所、機微性を明文化します。
+-- Review: TODOコメントを業務オーナーが実際の説明に置き換えてから実行してください。
+COMMENT ON COLUMN &quot;BAD_AI_READY&quot;.&quot;AIRD_T02&quot;.&quot;C01&quot; IS &#x27;TODO: define meaning, unit/format, null semantics, allowed values, source, and sensitivity for BAD_AI_READY.AIRD_T02.C01.&#x27;;
+COMMENT ON COLUMN &quot;BAD_AI_READY&quot;.&quot;AIRD_T02&quot;.&quot;C02&quot; IS &#x27;TODO: define meaning, unit/format, null semantics, allowed values, source, and sensitivity for BAD_AI_READY.AIRD_T02.C02.&#x27;;
+COMMENT ON COLUMN &quot;BAD_AI_READY&quot;.&quot;AIRD_T02&quot;.&quot;C03&quot; IS &#x27;TODO: define meaning, unit/format, null semantics, allowed values, source, and sensitivity for BAD_AI_READY.AIRD_T02.C03.&#x27;;
+COMMENT ON COLUMN &quot;BAD_AI_READY&quot;.&quot;AIRD_T03&quot;.&quot;C01&quot; IS &#x27;TODO: define meaning, unit/format, null semantics, allowed values, source, and sensitivity for BAD_AI_READY.AIRD_T03.C01.&#x27;;
+COMMENT ON COLUMN &quot;BAD_AI_READY&quot;.&quot;AIRD_T03&quot;.&quot;C02&quot; IS &#x27;TODO: define meaning, unit/format, null semantics, allowed values, source, and sensitivity for BAD_AI_READY.AIRD_T03.C02.&#x27;;
+COMMENT ON COLUMN &quot;BAD_AI_READY&quot;.&quot;AIRD_T03&quot;.&quot;C03&quot; IS &#x27;TODO: define meaning, unit/format, null semantics, allowed values, source, and sensitivity for BAD_AI_READY.AIRD_T03.C03.&#x27;;
+
+-- Remediation: missing or stale optimizer statistics
+-- Reason: LAST_ANALYZEDが未設定または古いため、Clean/Current score が低下します。
+-- Purpose: Oracle optimizer統計を収集し、メタデータ上もデータ状態を確認しやすくします。
+-- Review: 大きい表ではメンテナンス時間、DBMS_STATS設定、サンプリング方針をDBAと確認してください。
+-- Target: BAD_AI_READY.AIRD_T02; stats_reason=missing
+BEGIN
+  DBMS_STATS.GATHER_TABLE_STATS(
+    ownname =&gt; &#x27;BAD_AI_READY&#x27;,
+    tabname =&gt; &#x27;AIRD_T02&#x27;,
+    cascade =&gt; TRUE,
+    method_opt =&gt; &#x27;FOR ALL COLUMNS SIZE AUTO&#x27;
+  );
+END;
+/
+-- Target: BAD_AI_READY.AIRD_T03; stats_reason=missing
+BEGIN
+  DBMS_STATS.GATHER_TABLE_STATS(
+    ownname =&gt; &#x27;BAD_AI_READY&#x27;,
+    tabname =&gt; &#x27;AIRD_T03&#x27;,
+    cascade =&gt; TRUE,
+    method_opt =&gt; &#x27;FOR ALL COLUMNS SIZE AUTO&#x27;
+  );
+END;
+/
+
+-- Template only: primary key candidates
+-- Reason: 主キー未検出のため、Clean/Correlated/Consumable score が低下します。
+-- Purpose: AI回答の根拠行を安定して参照できる業務キーを明確にします。
+-- Review: 重複データ、NULL、既存アプリ影響、制約名、索引方針を確認するまで実行しないでください。
+-- ALTER TABLE &quot;BAD_AI_READY&quot;.&quot;AIRD_T02&quot; ADD CONSTRAINT &lt;constraint_name&gt; PRIMARY KEY (&lt;column_list&gt;);
+-- ALTER TABLE &quot;BAD_AI_READY&quot;.&quot;AIRD_T03&quot; ADD CONSTRAINT &lt;constraint_name&gt; PRIMARY KEY (&lt;column_list&gt;);
+
+-- Template only: freshness column candidates
+-- Reason: 鮮度列が未検出のため、Current score が低下し、AI回答でデータの新しさを説明しづらくなります。
+-- Purpose: 更新日時、取込日時、有効期間などを明示し、RAG/agent回答の鮮度説明を可能にします。
+-- Review: アプリが別の方法で鮮度を管理していないか確認し、列追加の影響をレビューしてください。
+-- ALTER TABLE &quot;BAD_AI_READY&quot;.&quot;AIRD_T02&quot; ADD &quot;UPDATED_AT&quot; TIMESTAMP(6);
+-- ALTER TABLE &quot;BAD_AI_READY&quot;.&quot;AIRD_T03&quot; ADD &quot;UPDATED_AT&quot; TIMESTAMP(6);</pre></details></section>
+<section id="ai-semantics"><h2>AI Semantics Readiness (Advisory)</h2><p>Annotation／Domainは任意のAdvisoryです。件数・coverageでスコアやCOMMENT必須ゲートは変わりません。</p><p>coverageの母数は、補助Collectorの収集対象と元の評価対象が重なるdistinct列です。直接登録と継承が同じ列にある場合も全体では1列です。未収集・失敗・対象列0件はN/Aです。</p><p>値なしAnnotationや任意ラベルも有効です。登録数は意味の正しさを保証しません。DESCRIPTION／ALIASES／VALUESを含む内容は業務担当者が確認してください。Domain名の ? は由来情報の不足です。</p><p>ALL_*で現セッションに見える範囲のみです。データ所有者と実行Userの可視性、収集日時、対象範囲を照合してください。View経由の継承や高度なDomain機能は未対応です。</p><p>ランタイム証跡は references/semantics-evidence-template.md に独立して記録してください。RUNSQLは別の生成試行であり、レビューした保存SQLの実行ではありません。</p><h3>収集状態</h3><div class="table-wrap"><table><thead><tr><th>Component</th><th>State</th><th>Diagnostic</th></tr></thead><tbody><tr><td>scope</td><td>collected / 収集成功</td><td>Normalized from displayed successful dictionary query output in the user-provided draft.</td></tr><tr><td>annotations</td><td>collected / 収集成功</td><td>Normalized from displayed successful dictionary query output in the user-provided draft.</td></tr><tr><td>domains</td><td>collected / 収集成功</td><td>Normalized from displayed successful dictionary query output in the user-provided draft.</td></tr></tbody></table></div><h3>集計</h3><div class="table-wrap"><table><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody><tr><td>収集対象の表数</td><td>2</td></tr><tr><td>収集対象の列数（重複排除）</td><td>6</td></tr><tr><td>元の評価対象列数</td><td>6</td></tr><tr><td>表Annotationがある表数</td><td>0</td></tr><tr><td>Annotated columns</td><td>2</td></tr><tr><td>Direct columns</td><td>1</td></tr><tr><td>Domain-inherited columns</td><td>1</td></tr><tr><td>由来不明の列数</td><td>0</td></tr><tr><td>Domain-linked columns</td><td>1</td></tr><tr><td>Column annotation coverage</td><td>33.33%</td></tr><tr><td>対象外の意味情報レコード（除外）</td><td>3</td></tr></tbody></table></div><h3>収集コンテキスト</h3><div class="table-wrap"><table><thead><tr><th>Field</th><th>Value</th></tr></thead><tbody><tr><td>session_user</td><td>ADB_USER</td></tr><tr><td>current_schema</td><td>N/A</td></tr><tr><td>target_owner</td><td>BAD_AI_READY</td></tr><tr><td>table_like_pattern</td><td>N/A</td></tr><tr><td>db_name</td><td>N/A</td></tr><tr><td>con_name</td><td>N/A</td></tr><tr><td>collected_at</td><td>N/A</td></tr></tbody></table></div><h3>Annotationと由来</h3><div class="table-wrap"><table><thead><tr><th>Object</th><th>Level</th><th>Category</th><th>Name</th><th>Value</th><th>Origin</th><th>Domain</th></tr></thead><tbody><tr><td>BAD_AI_READY.AIRD_T02.C03</td><td>COLUMN</td><td>ALIASES</td><td>ALIASES</td><td>Order status, 注文状態, 注文ステータス</td><td>DIRECT</td><td>—</td></tr><tr><td>BAD_AI_READY.AIRD_T02.C03</td><td>COLUMN</td><td>DESCRIPTION</td><td>DESCRIPTION</td><td>MAP_PROOF_V1: Order status code. 有効な注文 means active orders.</td><td>DIRECT</td><td>—</td></tr><tr><td>BAD_AI_READY.AIRD_T02.C03</td><td>COLUMN</td><td>VALUES</td><td>VALUES</td><td>Q7 = active (有効な注文); X9 = cancelled (取消済みの注文)</td><td>DIRECT</td><td>—</td></tr><tr><td>BAD_AI_READY.AIRD_T03.C03</td><td>COLUMN</td><td>ALIASES</td><td>ALIASES</td><td>Order status, 注文状態, 注文ステータス</td><td>DOMAIN_INHERITED</td><td>BAD_AI_READY.AIRD_D01</td></tr><tr><td>BAD_AI_READY.AIRD_T03.C03</td><td>COLUMN</td><td>DESCRIPTION</td><td>DESCRIPTION</td><td>MAP_PROOF_V1: Order status code. 有効な注文 means active orders.</td><td>DOMAIN_INHERITED</td><td>BAD_AI_READY.AIRD_D01</td></tr><tr><td>BAD_AI_READY.AIRD_T03.C03</td><td>COLUMN</td><td>VALUES</td><td>VALUES</td><td>Q7 = active (有効な注文); X9 = cancelled (取消済みの注文)</td><td>DOMAIN_INHERITED</td><td>BAD_AI_READY.AIRD_D01</td></tr></tbody></table></div><h3>列のDomain関連付け</h3><div class="table-wrap"><table><thead><tr><th>Column</th><th>Domain</th><th>Domain column</th></tr></thead><tbody><tr><td>BAD_AI_READY.AIRD_T03.C03</td><td>BAD_AI_READY.AIRD_D01</td><td>—</td></tr></tbody></table></div><h3>独立した検証事項</h3><div class="table-wrap"><table><thead><tr><th>Stage</th><th>Evidence</th></tr></thead><tbody><tr><td>辞書登録（観測）</td><td>収集値を参照。業務上の正しさは未確認</td></tr><tr><td>Profile設定</td><td>未確認</td></tr><tr><td>SHOWPROMPT確認</td><td>未確認</td></tr><tr><td>生成SQLレビュー</td><td>未確認</td></tr><tr><td>保存SQLの実行</td><td>未確認</td></tr><tr><td>別試行RUNSQL</td><td>未確認</td></tr></tbody></table></div></section>
+</main></body></html>

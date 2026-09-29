@@ -73,7 +73,8 @@ Run in this order:
 1. Inspect stored profile attributes.
 2. Run `SHOWPROMPT` for a representative NL2SQL question.
 3. Run `SHOWSQL` and manually review tables, joins, filters, grouping, date semantics, and read-only behavior.
-4. Run `RUNSQL` only after review.
+4. Save and review the SHOWSQL output, then execute the saved SQL. Optional
+   `RUNSQL` is a separate generation trial and may execute different SQL.
 5. Run RAG `SHOWPROMPT` to inspect retrieval augmentation.
 6. Run RAG `NARRATE` against questions with known answers.
 7. Check sources, filenames, missing citations, stale documents, and retrieval of intentionally irrelevant documents.
